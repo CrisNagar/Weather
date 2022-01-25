@@ -19,13 +19,14 @@ struct WeatherModelMapper {
         let sunriseWithTimeZone = dataModel.sun.sunrise.addingTimeInterval(dataModel.timezone - Double(TimeZone.current.secondsFromGMT()))
         
         return WeatherModel(city: dataModel.city,
+                            country: dataModel.sun.country,
                             weather: weather.main,
                             description: "\(weather.description)",
                             iconURL: URL(string: "http://openweathermap.org/img/wn/\(weather.iconURLString)@2x.png"),
                             currentTemperature: "\(Int(temperature.currentTemperature))º",
                             minTemperature: "\(Int(temperature.minTemperature))º",
                             maxTemperature: "\(Int(temperature.maxTemperature))º",
-                            humidity: "\(temperature.humidity)",
+                            humidity: "\(temperature.humidity)%",
                             sunset: sunsetWithTimeZone,
                             sunrise: sunriseWithTimeZone)
     }

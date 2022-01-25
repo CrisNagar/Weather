@@ -52,6 +52,7 @@ struct TemperatureDataModel: Decodable {
 struct SunModel: Decodable {
     let sunrise: Date
     let sunset: Date
+    let country: String
 }
 
 

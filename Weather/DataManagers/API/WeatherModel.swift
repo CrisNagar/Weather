@@ -9,6 +9,7 @@ import Foundation
 
 struct WeatherModel {
     let city: String
+    let country: String
     let weather: String
     let description: String
     let iconURL: URL?
@@ -19,18 +20,19 @@ struct WeatherModel {
     let sunset: Date
     let sunrise: Date
     
-    static let empty: WeatherModel = .init(city: "No city",
-                                           weather: "No weather",
-                                           description: "No description",
+    static let empty: WeatherModel = .init(city: " ",
+                                           country: " ",
+                                           weather: " ",
+                                           description: " ",
                                            iconURL: nil,
-                                           currentTemperature: "0º",
-                                           minTemperature: "0º",
-                                           maxTemperature: "0º",
-                                           humidity: "0%",
+                                           currentTemperature: " ",
+                                           minTemperature: " ",
+                                           maxTemperature: " ",
+                                           humidity: " ",
                                            sunset: .now,
                                            sunrise: .now)
     
-    static func getSunsetSunriseFormatted(_ date: Date) -> String {
+    static func getDateFormatted(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: date)

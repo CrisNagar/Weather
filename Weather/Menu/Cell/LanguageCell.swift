@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-class CustomMenuCell: UITableViewCell {
+class LanguageCell: UITableViewCell {
     @IBOutlet var countryImg: UIImageView!
     @IBOutlet var countryLabel: UILabel!
     

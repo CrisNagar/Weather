@@ -8,7 +8,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="100" id="ST6-uQ-XBe" customClass="CustomMenuCell" customModule="Weather" customModuleProvider="target">
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="100" id="ST6-uQ-XBe" customClass="LanguageCell" customModule="Weather" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="414" height="100"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="ST6-uQ-XBe" id="bL9-M4-nde">
@@ -40,8 +40,8 @@
                 </constraints>
             </tableViewCellContentView>
             <connections>
-                <outlet property="countryImg" destination="Xgz-4f-AQK" id="Bmo-gM-uel"/>
-                <outlet property="countryLabel" destination="qx4-Z7-AM7" id="d0k-ev-ckh"/>
+                <outlet property="countryImg" destination="Xgz-4f-AQK" id="c59-LF-kDw"/>
+                <outlet property="countryLabel" destination="qx4-Z7-AM7" id="Fs5-wY-o3A"/>
             </connections>
             <point key="canvasLocation" x="57.971014492753625" y="126.5625"/>
         </tableViewCell>

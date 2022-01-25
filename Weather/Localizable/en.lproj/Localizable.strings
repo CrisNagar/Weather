@@ -5,3 +5,10 @@
   Created by Carles on 22/1/22.
   
 */
+
+"english_lang" = "English";
+"spanish_lang" = "Spanish";
+"search_city" = "Search city";
+"london_city" = "London";
+"toronto_city" = "Toronto";
+"singapur_city" = "Singapur";

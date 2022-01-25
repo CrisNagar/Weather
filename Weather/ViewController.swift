@@ -17,6 +17,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var citySearch: UISearchBar!
     
     @IBOutlet weak var cityLabel: UILabel!
+    @IBOutlet weak var currenttempImg: UIImageView!
+    @IBOutlet weak var currentTempLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
     
     @IBOutlet weak var maxTempImg: UIImageView!
@@ -36,19 +38,14 @@ class ViewController: UIViewController {
     
     private let apiController = WeatherController()
     private var menuViewController: MenuViewController?
-    private var menuShadowView: UIView = UIView()
-    private var menuWidth: CGFloat = 260
-    private var padding: CGFloat = 150
-    private var isExpanded: Bool = false
-    private var menuTrailingConstraint: NSLayoutConstraint?
-    private var revealMenuOnTop: Bool = true
+    private var menuConfig = MenuViewConfig()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         citySearch.delegate = self
         
         Task{
-            await apiController.getWeatherr(city: "elche")
+            await apiController.getWeather(city: "elche")
             insertShadowView()
             insertMenu()
             loadInfo()
@@ -57,49 +54,42 @@ class ViewController: UIViewController {
         }
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-    }
-    
     @IBAction open func revealMenu() {
-        menuState(expanded: !isExpanded)
-        
-        
+        menuState(expanded: !menuConfig.isExpanded)
     }
     
     private func insertShadowView() {
-        menuShadowView = UIView(frame: self.view.bounds)
-        menuShadowView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        menuShadowView.backgroundColor = .black
-        menuShadowView.alpha = 0.0
+        menuConfig.shadowView = UIView(frame: self.view.bounds)
+        menuConfig.shadowView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        menuConfig.shadowView.backgroundColor = .black
+        menuConfig.shadowView.alpha = 0.0
         
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(TapGestureRecognizer))
         tapGestureRecognizer.numberOfTapsRequired = 1
         tapGestureRecognizer.delegate = self
         self.view.addGestureRecognizer(tapGestureRecognizer)
         
-        if (revealMenuOnTop) {
-            self.view.insertSubview(self.menuShadowView, at: 1)
+        if (menuConfig.revealOnTop) {
+            self.view.insertSubview(menuConfig.shadowView, at: 1)
         }
     }
     
     private func insertMenu() {
         let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
         
-        menuViewController = storyboard.instantiateViewController(withIdentifier: "SideMenuID") as? MenuViewController
-        menuViewController?.defaultHighlightedCell = 0
+        menuViewController = storyboard.instantiateViewController(withIdentifier: "MenuID") as? MenuViewController
         menuViewController?.delegate = self
         
         if let menuView = menuViewController?.view {
             self.view.insertSubview(menuView, at: 9)
             
             menuView.translatesAutoresizingMaskIntoConstraints = false
-            if revealMenuOnTop {
-                menuTrailingConstraint = menuViewController?.view.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: -menuWidth - padding)
-                menuTrailingConstraint?.isActive = true
+            if menuConfig.revealOnTop {
+                menuConfig.trailingConstraint = menuView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: -menuConfig.width - menuConfig.padding)
+                menuConfig.trailingConstraint?.isActive = true
                 
                 NSLayoutConstraint.activate([
-                    menuView.widthAnchor.constraint(equalToConstant: menuWidth),
+                    menuView.widthAnchor.constraint(equalToConstant: menuConfig.width),
                     menuView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
                     menuView.topAnchor.constraint(equalTo: view.topAnchor)
                 ])
@@ -108,8 +98,6 @@ class ViewController: UIViewController {
         
         addChild(menuViewController ?? UIViewController())
         menuViewController?.didMove(toParent: self)
-        
-        
     }
     
     private func setGradientBackground() {
@@ -130,16 +118,29 @@ class ViewController: UIViewController {
         humidityImg.image = UIImage(systemName: "humidity.fill")?.applyingSymbolConfiguration(.preferringMulticolor())
         sunriseImg.image = UIImage(systemName: "sunrise.fill")?.applyingSymbolConfiguration(.preferringMulticolor())
         sunsetImg.image = UIImage(systemName: "sunset.fill")?.applyingSymbolConfiguration(.preferringMulticolor())
+        
+        DispatchQueue.global().async { [weak self] in
+            if let data = try? Data(contentsOf: self?.apiController.info.iconURL ?? URL(fileURLWithPath: "")) {
+                if let image = UIImage(data: data) {
+                    DispatchQueue.main.async {
+                        self?.currenttempImg.image = image
+                    }
+                }
+            }
+        }
     }
     
     private func loadInfo() {
         cityLabel.text = apiController.info.city.capitalized
+        currentTempLabel.text = apiController.info.currentTemperature
         descriptionLabel.text = apiController.info.description.uppercased()
         maxTempLabel.text = apiController.info.maxTemperature
         minTempLabel.text = apiController.info.minTemperature
         humidityLabel.text = apiController.info.humidity
-        sunriseLabel.text = WeatherModel.getSunsetSunriseFormatted(apiController.info.sunrise)
-        sunsetLabel.text = WeatherModel.getSunsetSunriseFormatted(apiController.info.sunset)
+        sunriseLabel.text = WeatherModel.getDateFormatted(apiController.info.sunrise)
+        sunsetLabel.text = WeatherModel.getDateFormatted(apiController.info.sunset)
+        
+        citySearch.placeholder = "search_city".localized
     }
     
     private func showMainViewController() -> ViewController? {
@@ -166,41 +167,44 @@ extension ViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked( _ searchBar: UISearchBar) {
         Task {
-            await apiController.getWeatherr(city: searchBar.text ?? "")
+            await apiController.getWeather(city: searchBar.text ?? "")
             loadInfo()
         }
+        
     }
 }
 
-extension ViewController: SideMenuViewControllerDelegate {
-    func selectedCell(_ row: Int) {
-        // TODO
+extension ViewController: MenuViewControllerDelegate {
+    func selected(city: String) {
+        Task {
+            await apiController.getWeather(city: city)
+            loadInfo()
+        }
     }
+    
+    func selected(lang: LocalizableUtil) {
+        LocalizableUtil.language = lang
+    }
+    
     
     func menuState(expanded: Bool) {
         if expanded {
-            animatedMenu(targetPosition: self.revealMenuOnTop ? 0 : self.menuWidth) {
-                _ in self.isExpanded = true
+            animatedMenu(targetPosition: self.menuConfig.revealOnTop ? 0 : self.menuConfig.width) {
+                _ in self.menuConfig.isExpanded = true
             }
             
             UIView.animate(withDuration: 0.5) {
-                self.menuShadowView.alpha = 0.6
+                self.menuConfig.shadowView.alpha = 0.6
             }
-            
-            
         } else {
-            self.animatedMenu(targetPosition: self.revealMenuOnTop ? (-menuWidth - padding) : 0) {
-                _ in self.isExpanded = false
+            self.animatedMenu(targetPosition: self.menuConfig.revealOnTop ? (-menuConfig.width - menuConfig.padding) : 0) {
+                _ in self.menuConfig.isExpanded = false
             }
             
             UIView.animate(withDuration: 0.5) {
-                self.menuShadowView.alpha = 0.0
+                self.menuConfig.shadowView.alpha = 0.0
             }
-            
-            
         }
-        
-        
     }
     
     func animatedMenu(targetPosition: CGFloat, completion: @escaping (Bool) -> ()) {
@@ -210,16 +214,13 @@ extension ViewController: SideMenuViewControllerDelegate {
                        initialSpringVelocity: 0,
                        options: .layoutSubviews,
                        animations: {
-            if self.revealMenuOnTop {
-                self.menuTrailingConstraint?.constant = targetPosition
+            if self.menuConfig.revealOnTop {
+                self.menuConfig.trailingConstraint?.constant = targetPosition
                 self.view.layoutIfNeeded()
             } else {
                 self.view.subviews[1].frame.origin.x = targetPosition
             }
-        },
-                       completion: completion)
-        
-        
+        },completion: completion)
     }
 }
 
